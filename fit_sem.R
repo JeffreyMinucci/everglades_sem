@@ -1,8 +1,10 @@
 library(lavaan)
 
 
-data <- read.csv('data/everglades_sem_cleaned.csv')[,-1]
-data<- scale(data)
+data <- read.csv('data/everglades_sem_imputed_cleaned.csv')[,-1]
+data <- data[!is.na(data$ln_Hg_fish),]
+
+data <- scale(data)
 
 ## Split into training and test data - Not currently used for SEM 
 train_size <- floor(0.90 * nrow(data))
@@ -32,8 +34,8 @@ model <- '#regressions
           MeHg_soil ~~ Hg_soil
           ln_Hg_fish ~~ Hg_soil'
 
-sem_model <- sem(model, data, missing = "ML")#, se = 'bootstrap')
-summary(sem_model, standardized=TRUE)
+sem_model <- sem(model, data)#, se = 'bootstrap')
+summary(sem_model, fit.measures=T, standardized=TRUE)
 
 
 
@@ -58,5 +60,9 @@ model2 <- '#regressions
           MeHg_soil ~~ Hg_soil
           ln_Hg_fish ~~ Hg_soil'
 
-sem_model2 <- sem(model2, data, missing = "ML")
-summary(sem_model2, fit.measures=TRUE, standardized=TRUE)
+sem_model2 <- sem(model2, data)
+summary(sem_model2, fit.measures=TRUE, standardized=TRUE, rsquare=TRUE)
+
+predicted <- lavPredict(sem_model2,type= "yhat")[,"ln_Hg_fish"]
+r.sq <- cor(data[,"ln_Hg_fish"], predicted)^2
+r.sq
