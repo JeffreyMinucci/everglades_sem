@@ -48,6 +48,11 @@ plot(rf$finalModel) # show error vs ntrees
 
 randomForest::varImpPlot(rf$finalModel)  # variable importance
 
+# plot predicted vs actual
+plot(df_test$ln_THG_Fish, rf_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
+abline(0,1)
+
+
 #########################
 
 ### model-averaged neural networks
@@ -79,6 +84,10 @@ postResample(pred = nn_predict, obs = df_test$ln_THG_Fish)
 plot(nn)
 
 varImp(nn)  # variable importance, scaled to 100 for most important
+
+# plot predicted vs actual
+plot(df_test$ln_THG_Fish, nn_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
+abline(0,1)
 
 #########################
 
@@ -112,6 +121,9 @@ postResample(pred = glmr_predict, obs = df_test$ln_THG_Fish)
 plot(glmr)
 coef(glmr$finalModel, glmr$bestTune$lambda)
 
+# plot predicted vs actual
+plot(df_test$ln_THG_Fish, glmr_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
+abline(0,1)
 
 
 
