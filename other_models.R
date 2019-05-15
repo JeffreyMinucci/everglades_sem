@@ -1,5 +1,6 @@
 library(glmnet)
 library(caret)
+library(pdp)
 
 
 df <- read.csv("data/missForest_Gambusia_Output.csv")
@@ -126,4 +127,77 @@ plot(df_test$ln_THG_Fish, glmr_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual
 abline(0,1)
 
 
+#########################
+### GAM
+
+# best so far - Rsq = 0.49
+
+cl <- makeCluster(10) # 10 cores
+registerDoParallel(cl)
+
+# best so far - Rsq = 
+gam1 <- train(ln_THG_Fish ~ ., data = df_train,
+            method = "gam",
+            #trControl = fitControl, 
+            trControl = trainControl(method='none'),
+            tuneGrid = expand.grid(select=c(TRUE), method = c("GCV.Cp")),
+            preProcess = c("center", "scale"),
+            verbose = FALSE)
+gam1
+
+
+# end parallel cluster
+stopCluster(cl)
+
+# results and prediction accuracy
+gam_predict <- predict(gam1, df_test, na.action = NULL)
+postResample(pred = gam_predict, obs = df_test$ln_THG_Fish)
+
+plot(gam1$finalModel)
+summary(gam1$finalModel)
+varImp(gam1)  # variable importance
+
+# plot predicted vs actual
+plot(df_test$ln_THG_Fish, gam_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
+abline(0,1)
+
+
+##########################
+# MARS - multivariate adaptive regression splines
+
+# best so far - Rsq = 0.58
+
+cl <- makeCluster(10) # 10 cores
+registerDoParallel(cl)
+
+mars_grid = expand.grid(nprune=seq(2,30,2), degree = c(1,2,3))
+mars <- train(ln_THG_Fish ~ ., data = df_train,
+              method = "earth",
+              trControl = fitControl, 
+              #trControl = trainControl(method='none'),
+              tuneGrid = mars_grid,
+              preProcess = c("center", "scale"))
+mars
+
+# end parallel cluster
+stopCluster(cl)
+
+plot(mars)  # vizualize tuning
+
+# results and prediction accuracy
+mars_predict <- predict(mars, df_test, na.action = NULL)
+postResample(pred = mars_predict, obs = df_test$ln_THG_Fish)
+
+plot(mars$finalModel)
+summary(mars$finalModel)
+varImp(mars)  # variable importance
+
+# plot predicted vs actual
+plot(df_test$ln_THG_Fish, mars_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
+abline(0,1)
+
+#partial dependence plots
+partial(mars, pred.var = "MEHG_SW",plot=T, rug=T)
+partial(mars, pred.var = "Alk_Phos_SW", plot=T, rug=T)
+partial(mars, pred.var = "LONG",plot=T, rug = T)
 
