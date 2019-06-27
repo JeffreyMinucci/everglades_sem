@@ -2,7 +2,9 @@ library(caret)
 library(gbm)
 library(doParallel)
 
-df <- read.csv("data/missForest_Gambusia_Output.csv")
+#df <- read.csv("data/missForest_Gambusia_Output.csv")
+df <- read.csv("data/Everglades_Gambusia.csv")
+
 drops <- c("STA_ID", "Date","X")  # keeping LONG and LAT in 
 df <- df[!is.na(df$THG_Fish),!(names(df) %in% drops)]
 df$ln_THG_Fish <- log(df$THG_Fish)
@@ -49,6 +51,10 @@ varImp(gbm1)  # variable importance, scaled to 100 for most important
 
 plot(gbm1$finalModel, i.var = "Alk_Phos_SW")
 plot(gbm1$finalModel, i.var = "MEHG_SW")
+plot(gbm1$finalModel, i.var = "SO4_soil")
+plot(gbm1$finalModel, i.var = "SO4_SW")
+
+
 
 # plot predicted vs actual
 plot(df_test$ln_THG_Fish, gbm_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
