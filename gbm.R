@@ -59,3 +59,8 @@ plot(gbm1$finalModel, i.var = "SO4_SW")
 # plot predicted vs actual
 plot(df_test$ln_THG_Fish, gbm_predict, xlim=c(0,7), ylim=c(0,7), xlab = "Actual ln Hg in fish", ylab = "Predicted ln Hg in fish")
 abline(0,1)
+
+#check out gbm package direct fitting and visualize a tree
+gbm.fit <- gbm(ln_THG_Fish ~ ., data = df_train, distribution = "gaussian",
+               n.trees=1900, interaction.depth = 3, shrinkage = 0.01, n.minobsinnode = 10, verbose=F)
+pretty.gbm.tree(gbm.fit, i.tree=1)
